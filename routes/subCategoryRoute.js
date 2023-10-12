@@ -9,6 +9,7 @@ const {
   setCategoryToBody,
   createFilterObject,
 } = require("../controllers/subCategoryController");
+const AuthController = require("../controllers/authController");
 
 const {
   createsubCategoryValidator,
@@ -18,16 +19,32 @@ const {
 } = require("../utils/validators/subCategoryValidator");
 
 // mergeParams: Allow us to access parameters on other routes
-const router = express.Router({mergeParams:true});
+const router = express.Router({ mergeParams: true });
 
 router
   .route("/")
-  .post(setCategoryToBody, createsubCategoryValidator, createSubCategory)
-  .get(createFilterObject , getSubCategories);
+  .post(
+    AuthController.protect,
+    AuthController.allowedTo("admin", "manger"),
+    setCategoryToBody,
+    createsubCategoryValidator,
+    createSubCategory
+  )
+  .get(createFilterObject, getSubCategories);
 router
   .route("/:id")
   .get(getsubCategoryValidator, getSubCategory)
-  .put(updatesubCategoryValidator, updateSubCategory)
-  .delete(deletesubCategoryValidator ,deleteSubCategory);
+  .put(
+    AuthController.protect,
+    AuthController.allowedTo("admin", "manger"),
+    updatesubCategoryValidator,
+    updateSubCategory
+  )
+  .delete(
+    AuthController.protect,
+    AuthController.allowedTo("admin"),
+    deletesubCategoryValidator,
+    deleteSubCategory
+  );
 
 module.exports = router;

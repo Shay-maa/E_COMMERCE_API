@@ -119,3 +119,20 @@ exports.deleteUserValidator = [
   check("id").isMongoId().withMessage("Invalid User Id Formate"),
   validator,
 ];
+
+exports.updateLoggedUserValidator = [
+  body("name")
+    .optional()
+    .custom((val, { req }) => {
+      req.body.slug = slugify(val);
+      return true;
+    }),
+
+  check("email").optional().isEmail().withMessage("invalid email address"),
+
+  check("phone")
+    .optional()
+    .isMobilePhone("ar-EG")
+    .withMessage("Invalid phone number only accepted Egypt Phone numbers"),
+  validator,
+];

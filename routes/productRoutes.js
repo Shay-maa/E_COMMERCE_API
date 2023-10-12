@@ -9,6 +9,8 @@ const {
   uploadProductImages,
   resizeImages,
 } = require("../controllers/productController");
+const AuthController = require("../controllers/authController");
+
 const {
   getProductValidator,
   createProductValidator,
@@ -22,6 +24,8 @@ router
   .route("/")
   .get(getProducts)
   .post(
+    AuthController.protect,
+    AuthController.allowedTo("admin", "manger"),
     uploadProductImages,
     resizeImages,
     createProductValidator,
@@ -30,7 +34,19 @@ router
 router
   .route("/:id")
   .get(getProductValidator, getProduct)
-  .put(uploadProductImages, resizeImages, updateProductValidator, updateProduct)
-  .delete(deleteProductValidator, deleteProduct);
+  .put(
+    AuthController.protect,
+    AuthController.allowedTo("admin", "manger"),
+    uploadProductImages,
+    resizeImages,
+    updateProductValidator,
+    updateProduct
+  )
+  .delete(
+    AuthController.protect,
+    AuthController.allowedTo("admin"),
+    deleteProductValidator,
+    deleteProduct
+  );
 
 module.exports = router;

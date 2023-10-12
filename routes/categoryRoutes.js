@@ -1,6 +1,6 @@
 const express = require("express");
 
-const { protect } = require("../controllers/authController");
+const AuthController = require("../controllers/authController");
 
 const {
   getCategoryValidator,
@@ -27,7 +27,8 @@ router
   .route("/")
   .get(getCategories)
   .post(
-    protect,
+    AuthController.protect,
+    AuthController.allowedTo("admin", "manger"),
     uploadCategoryImage,
     resizeImage,
     createCategoryValidator,
@@ -37,11 +38,18 @@ router
   .route("/:id")
   .get(getCategoryValidator, getCategory)
   .put(
+    AuthController.protect,
+    AuthController.allowedTo("admin", "manger"),
     uploadCategoryImage,
     resizeImage,
     updateCategoryValidator,
     updateCategory
   )
-  .delete(deleteCategoryValidator, deleteCategory);
+  .delete(
+    AuthController.protect,
+    AuthController.allowedTo("admin"),
+    deleteCategoryValidator,
+    deleteCategory
+  );
 
 module.exports = router;
