@@ -53,5 +53,9 @@ cd e-commerce-api
   <li>Employ Sharp library for image processing.</li>
   <li>Support single and multiple file uploads.</li>
   <li>Save image names in the database and return URLs in the response.</li>
+    <li>Authentication And Authorization</li>
+    <li>This project ensures user password security through the use of bcrypt.js</li>
+    <li>User authentication and session management are handled through JSON Web Tokens (JWT). </li>
+    <li>Users can request a password reset by providing their email address. A unique code is generated and sent to their email,</li>
 </ul>
 
