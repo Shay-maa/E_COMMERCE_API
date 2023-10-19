@@ -15,6 +15,9 @@ const brandRoute = require("./routes/brandRoutes");
 const productRoute = require("./routes/productRoutes");
 const userRoute = require("./routes/userRoutes");
 const authRoute = require("./routes/authRoutes");
+const reviewRoute = require("./routes/reviewRoutes");
+const wishlistRoute = require("./routes/wishlistRoutes");
+const addressRoute = require("./routes/addressRoutes");
 
 const ApiError = require("./utils/apiErrors");
 const globalError = require("./middlewares/ErrorMiddleware");
@@ -36,7 +39,9 @@ app.use("/api/v1/brands", brandRoute);
 app.use("/api/v1/products", productRoute);
 app.use("/api/v1/users", userRoute);
 app.use("/api/v1/auth", authRoute);
-
+app.use("/api/v1/reviews", reviewRoute);
+app.use("/api/v1/wishlist", wishlistRoute);
+app.use("/api/v1/addresses", addressRoute);
 //handel the unknown routes
 app.all("*", (req, res, next) => {
   next(new ApiError(`Can't find this route ${req.originalUrl}`, 400));
