@@ -9,6 +9,9 @@ exports.delete = (Model) =>
     if (!document) {
       return next(new ApiError(`no such document with id  ${id}`, 404));
     }
+
+    // Trigger "remove" event when update document
+    document.deleteOne();
     res.status(204).send();
   });
 
@@ -22,6 +25,7 @@ exports.update = (Model) =>
         new ApiError(`no such document with id ${req.params.id}`, 404)
       );
     }
+    document.save();
     res.status(200).json({ data: document });
   });
 
