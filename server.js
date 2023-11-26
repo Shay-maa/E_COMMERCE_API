@@ -1,4 +1,6 @@
 const path = require("path");
+const cors = require("cors");
+const compression = require("compression");
 
 const express = require("express");
 const morgan = require("morgan");
@@ -10,6 +12,7 @@ const dbconnect = require("./config/dbConnect");
 
 //routes
 const mountRoutes = require("./routes/index");
+const { webhookCheckout } = require("./controllers/orderController");
 
 const ApiError = require("./utils/apiErrors");
 const globalError = require("./middlewares/ErrorMiddleware");
@@ -18,6 +21,22 @@ dbconnect();
 
 const app = express();
 
+//Enable other domain to access your application
+app.use(cors());
+app.options("*", cors());
+
+//compress all responses
+app.use(compression());
+
+//checkout webhook
+
+app.post(
+  "/webhook-checkout",
+  express.raw({ type: "application/json" }),
+  webhookCheckout
+);
+
+//Middlewares
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "uploads")));
 
