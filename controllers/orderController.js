@@ -5,6 +5,7 @@ const ApiError = require("../utils/apiErrors");
 const factory = require("./handlerFactory");
 const Cart = require("../models/cartModel");
 const Order = require("../models/orderModel");
+const User = require("../models/userModel");
 const Product = require("../models/productModel");
 
 // @desc    create cash order
@@ -148,6 +149,42 @@ exports.checkoutSession = asyncHandler(async (req, res, next) => {
   res.status(200).json({ status: "success", session });
 });
 
+const createCardOrder = async (session) => {
+  const cartId = session.client_reference_id;
+  const shippingAddress = session.metadata;
+  const orderPrice = session.amount_total / 100;
+
+  const cart = await Cart.findById(cartId);
+  const user = await User.findOne({ email: session.customer_email });
+
+  // create order with default paymentMethodType card
+  const order = await Order.create({
+    user: user._id,
+    cartItems: cart.cartItems,
+    shippingAddress,
+    totalOrderPrice: orderPrice,
+    isPaid: true,
+    paidAt: Date.now(),
+    paymentMethodType: "card",
+  });
+
+  // After creating order, decrement product quantity, increment product sold
+  if (order) {
+    const bulkOption = cart.cartItems.map((item) => ({
+      updateOne: {
+        filter: {
+          _id: item.product,
+        },
+        update: { $ine: { quantity: -item.quantity, sold: +item.quantity } },
+      },
+    }));
+    await Product.bulkWrite(bulkOption, {});
+
+    //clear cart depend on cartId
+    await Cart.findByIdAndDelete(req.params.cartId);
+  }
+};
+
 exports.webhookCheckout = asyncHandler(async (req, res, next) => {
   const sig = req.headers["stripe-signature"];
 
@@ -162,10 +199,8 @@ exports.webhookCheckout = asyncHandler(async (req, res, next) => {
   } catch (err) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-  console.log("add event here ...........");
-  // Handle the event
-  console.log(`Unhandled event type ${event.type}`);
-
-  // Return a 200 res to acknowledge receipt of the event
-  res.send();
+  if (event.type === "checkout.session.completed") {
+    createCardOrder(event.data.object);
+  }
+  res.status(200).json({ received: true });
 });
